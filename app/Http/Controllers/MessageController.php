@@ -11,10 +11,9 @@ class MessageController extends Controller
 {
     public function sendMessage(Request $request)
     {
-        dd($request->all());
-
+//        dump($request->all());
         $message = new Message();
-        $message->sender_id = Auth::id();  // Hozirgi foydalanuvchining IDsi
+        $message->sender_id = $request->input('sender_id');
         $message->receiver_id = $request->input('receiver_id');
         $message->text = $request->input('text');
         $message->save();
@@ -29,30 +28,20 @@ class MessageController extends Controller
                 $query->where('receiver_id', Auth::id())
                     ->where('sender_id', $receiverUSER->id);
             })
-            ->orderBy('created_at', 'asc')  // Yozishmalarni vaqt bo'yicha tartiblash
+            ->orderBy('created_at', 'asc')
             ->get();
 
-
-        $receiverUSER = User::find($request->input('receiver_id'));
-
-        $users = User::all() ->except(Auth::user()->id);
-
-
-        if ($message) {
-//            dd($messages ->toArray());
-            return view('chat', [
-                'receiverUSER' => $receiverUSER,
+        if ($messages) {
+            return response()->json([
+                'message_sent' => true,
                 'messages' => $messages,
-                'users' => $users,
-                "message_sent" => true
             ]);
-
         }
-        return "Xatolik yuz berdi";
 
-
-
+        // Agar xatolik yuz bersa
+        return response()->json(['error' => 'Xatolik yuz berdi'], 400);
     }
+
 
 
 }

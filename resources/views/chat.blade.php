@@ -5,11 +5,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Chat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         {{--#chatBox {--}}
         {{--    background-image: url('{{ asset('images/tabiat.png') }}'); /* To'liq yo'l bilan */--}}
@@ -176,29 +177,32 @@
 </head>
 <body>
 <div class="container" id="chat">
+
     <!-- Sidebar for contacts -->
     <div class="sidebar">
         <h3>Contacts</h3>
-        {{--        @if (isset($messages) && isset($receiverUSER) && isset($users))--}}
-        {{--            @dd(['Messages' => $messages, 'Receiver' => $receiverUSER, 'Users' => $users])--}}
-        {{--        @endif--}}
-        {{--                @if (isset($messages))--}}
-        {{--                    @dump( $messages->all())--}}
-        {{--                @endif--}}
 
 
         {{--        @dump($users)--}}
         @foreach ($users as $user)
-            <a href="/contact/user_id/{{ $user->id }}"
-               onclick="setChatUser('John Doe', 'https://via.placeholder.com/40')" class="contact">
+            @php
+                $userId = json_encode($user->id);
+            @endphp
+            <button id="contact" class="contact" data-user-id="{{ $user->id }}">
                 <img src="{{ asset('images/user.jpeg') }}" alt="User Image">
                 <div>
                     <div class="name">{{ $user->name }}</div>
-                    {{-- <div class="last-message">Hey, how are you?</div> --}}
                 </div>
-            </a>
-        @endforeach
+            </button>
 
+            {{--            <a href="/contact/user_id/{{$user->id }}"  id="UserId" class="contact">--}}
+            {{--                <img src="{{ asset('images/user.jpeg') }}" alt="User Image">--}}
+            {{--                <div>--}}
+            {{--                    <div class="name">{{ $user->name }}</div>--}}
+            {{--                </div>--}}
+            {{--            </a>--}}
+
+        @endforeach
 
         <!-- Add more contacts here -->
     </div>
@@ -206,18 +210,7 @@
     <!-- Chat container -->
     <div class="chat-container">
         <div class="chat-header" id="chatHeader">
-            @if (isset($receiverUSER))
-                {{--                @dd($receiverUSER)--}}
-                <a href="/contact/user_id/{{ $user->id }}"
-                   onclick="setChatUser('John Doe', 'https://via.placeholder.com/40')" class="contact">
-                    <img src="{{ asset('images/user.jpeg') }}" alt="User Image">
-                    <div>
-                        <div class="name">{{ $receiverUSER->name }}</div>
-                        {{-- <div class="last-message">Hey, how are you?</div> --}}
-                    </div>
-                </a>
-                {{--                <div class="name" id="chatUserName">{{ $receiverUSER->name }}</div>--}}
-            @endif
+
         </div>
         <div class="chat-box" id="chatBox">
             <!-- Messages will appear here -->
@@ -246,78 +239,110 @@
 
 
         </div>
-        <div class="input-box">
-            <form id="sendMessageForm" action="/send-message" method="POST">
-                @csrf
-                @if (isset($receiverUSER))
-                    <input type="text" id="messageInput" name="text" placeholder="Type a message..." required>
-                    <button id="sendMessageBtn" type="submit"><i class="fas fa-paper-plane"></i></button>
-                    <input type="hidden" name="receiver_id" value="{{ $receiverUSER->id }}">
-                @endif
-            </form>
-
-
-            @if(isset($message_sent) && $message_sent === true)
-
-                <script>
-                    // console.log('ifga kirdi')
-                    const num = document.querySelector('#messageInput').value = '';  // Inputni tozalash
-                    console.log(num);
-                </script>
-            @endif
+        <div class="input-box" id="inputBox">
+{{--           forma keladi shu yerga--}}
+            <input type="text" id="messageInput" name="text" placeholder="Type a message..." required>
+            <button type="button" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+            <input type="hidden" id="receiver_id" value="${receiverUSER.id}">
+            <input type="hidden" id="sender_id" value="${senderUSER.id}">
 
 
         </div>
     </div>
 </div>
-<script src="../Vue/chat.js"></script>
+<script>
+    document.querySelectorAll('.contact').forEach((button) => {
+        button.addEventListener('click', function () {
+            const userId = this.getAttribute('data-user-id');
+            fetch(`http://localhost:8080/contact/user_id/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    sendUserId(data)
+                })
+        });
+    });
 
-{{--<script>--}}
-{{--    const chatBox = document.getElementById('chatBox');--}}
-{{--    const messageInput = document.getElementById('messageInput');--}}
-{{--    const sendMessageBtn = document.getElementById('sendMessageBtn');--}}
-{{--    const chatHeader = document.getElementById('chatHeader');--}}
-{{--    const chatUserImage = document.getElementById('chatUserImage');--}}
-{{--    const chatUserName = document.getElementById('chatUserName');--}}
 
-{{--    // Function to set the current chat user--}}
-{{--    function setChatUser(name, image) {--}}
-{{--        chatUserName.textContent = name;--}}
-{{--        chatUserImage.src = image;--}}
-{{--    }--}}
 
-{{--    // Simulate receiving a message--}}
-{{--    function addMessage(content, isUser = false) {--}}
-{{--        const messageDiv = document.createElement('div');--}}
-{{--        messageDiv.classList.add('message');--}}
-{{--        if (isUser) messageDiv.classList.add('user');--}}
+    function sendUserId(data) {
+        const chat = document.querySelector("#chatBox");
+        const messages = data.messages;
+        const receiverUSER = data.receiverUSER;
+        const senderUSER = data.senderUSER;
+        chat.innerHTML = "";
 
-{{--        const contentDiv = document.createElement('div');--}}
-{{--        contentDiv.classList.add('content');--}}
-{{--        contentDiv.textContent = content;--}}
+        messages.forEach(message => {
+            // senderUSER.id ni ishlatamiz
+            if (message.sender_id === senderUSER.id) {
+                chat.innerHTML += `
+                <div class="message user">
+                    <div class="message">
+                        <div class="content">${message.text}
+                            <div class="time">${new Date(message.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</div>
+                        </div>
+                    </div>
+                </div>`;
+            } else if (message.sender_id === receiverUSER.id) {
+                chat.innerHTML += `
+                <div class="message receiver">
+                    <div class="message">
+                        <div class="content">${message.text}
+                            <div class="time">${new Date(message.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        });
+        const inputBoxt = (receiverUSER, senderUSER) => {
+            const inputbox = document.querySelector("#inputBox");
+            inputbox.innerHTML = `
+            <input type="text" id="messageInput" name="text" placeholder="Type a message..." required>
+            <button type="button" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+            <input type="hidden" id="receiver_id" value="${receiverUSER.id}">
+            <input type="hidden" id="sender_id" value="${senderUSER.id}">
 
-{{--        messageDiv.appendChild(contentDiv);--}}
-{{--        chatBox.appendChild(messageDiv);--}}
-{{--        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the latest message--}}
-{{--    }--}}
+`;
+        };
 
-{{--    sendMessageBtn.addEventListener('click', () => {--}}
-{{--        const message = messageInput.value.trim();--}}
-{{--        if (message) {--}}
-{{--            addMessage(message, true); // Add user message--}}
-{{--            messageInput.value = ''; // Clear input field--}}
-{{--            // Simulate receiving a response (this could be from a server in a real app)--}}
-{{--            setTimeout(() => addMessage('This is a response', false), 1000);--}}
-{{--        }--}}
-{{--    });--}}
+        inputBoxt(receiverUSER, senderUSER);
 
-{{--    // Optional: Send message on Enter key press--}}
-{{--    messageInput.addEventListener('keypress', (event) => {--}}
-{{--        if (event.key === 'Enter') {--}}
-{{--            sendMessageBtn.click();--}}
-{{--        }--}}
-{{--    });--}}
-{{--</script>--}}
+        const button = document.querySelector('#sendMessageBtn');
 
+        button.addEventListener('click', () => {
+            const messageInput = document.querySelector('#messageInput');
+            const message = messageInput.value;
+            const receiverUSER = document.querySelector('#receiver_id')
+            const senderUSER = document.querySelector('#sender_id')
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            fetch("http://localhost:8080/send-message", {
+                method: "POST",
+                headers:{
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken
+                },
+                body: JSON.stringify({
+                    text: message,
+                    receiver_id: receiverUSER.value,
+                    sender_id: senderUSER.value
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    sendUserId(data)
+                })
+
+        });
+
+    }
+
+</script>
 </body>
 </html>

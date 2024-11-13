@@ -12,12 +12,15 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index($user_id): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
+    public function index($user_id)
     {
-        $users = User::all() ->except(Auth::user()->id);
-        $receiverUSER = User::find($user_id);
-        $messages = Message::where(function ($query) use ($receiverUSER) {
+        $users = User::all()->except(Auth::user()->id);
 
+        $senderUSER = User::find(Auth::id());
+
+        $receiverUSER = User::find($user_id);
+
+        $messages = Message::where(function ($query) use ($receiverUSER) {
             $query->where('sender_id', Auth::id())
                 ->where('receiver_id', $receiverUSER->id);
         })
@@ -25,14 +28,24 @@ class UserController extends Controller
                 $query->where('receiver_id', Auth::id())
                     ->where('sender_id', $receiverUSER->id);
             })
-            ->orderBy('created_at', 'asc')  // Yozishmalarni vaqt bo'yicha tartiblash
+            ->orderBy('created_at', 'asc') // Yozishmalarni vaqt bo'yicha tartiblash
             ->get();
 
-
-        return view('chat', ['receiverUSER' => $receiverUSER, 'users' => $users, 'messages' => $messages]);
-
-
+        // Javobni JSON formatida qaytarish
+        return response()->json([
+            'receiverUSER' => $receiverUSER ? $receiverUSER->toArray() : null, // null bilan tekshirish
+//            'users' => $users->toArray(),
+            'senderUSER' => $senderUSER ? $senderUSER->toArray() : null,
+            'messages' => $messages->toArray()
+        ]);
     }
+
+
+
+//        return view('chat', ['receiverUSER' => $receiverUSER, 'users' => $users, 'messages' => $messages]);
+
+
+
 
     /**
      * Show the form for creating a new resource.
