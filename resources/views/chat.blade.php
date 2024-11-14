@@ -1,88 +1,47 @@
 <!DOCTYPE html>
-{{--http://10.10.3.166:8080--}}
-
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Chat</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <title>Real-Time Chat Interface</title>
     <style>
-        {{--#chatBox {--}}
-        {{--    background-image: url('{{ asset('images/tabiat.png') }}'); /* To'liq yo'l bilan */--}}
-        {{--    background-size: cover;--}}
-        {{--    background-position: center;--}}
-        {{--    background-repeat: no-repeat;--}}
-        {{--}--}}
+        /* style.css */
 
-         .chat-container {
-            background-image: url('{{ asset('images/360_F_815432104_01j4HoAKfRaNvnUKMnZh3YytG9eh3g7y.jpg') }}'); /* To'liq yo'l bilan */
-            background-size: cover; /* Divni butunlay qoplash uchun */
-            background-position: center; /* Rasmni markazlashtirish */
-            background-repeat: no-repeat; /* Rasmni takrorlamaslik */
-        }
-
-        /* Add your CSS styles here */
-        body {
-            background-color: #343a40;
-            color: white;
-            font-family: 'Arial', sans-serif;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
-        .message .time {
-            color: #888; /* Soat matnining rangini kulrang qilish */
-            font-size: 12px; /* Soat matnining o'lchamini kichikroq qilish */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
         }
 
-        .container {
-
+        .chat-container {
             display: flex;
             width: 100%;
             height: 100vh;
-            max-width: 1920px;
         }
 
-        .sidebar {
-            background-image: url('{{ asset('images/360_F_815432104_01j4HoAKfRaNvnUKMnZh3YytG9eh3g7y.jpg') }}');
-            background-size: cover; /* Sidebarni to'liq qoplaydi */
-            background-position: center; /* Rasmning markazini joylash */
-
-
-            width: 350px;
-            background-color: #222a35;
+        .contacts {
+            width: 25%;
+            background-color: #2a2a2a;
             padding: 20px;
-            color: white;
-            border-radius: 10px;
-            /*margin-right: 20px;*/
-            display: flex;
-            flex-direction: column;
-            height: 100%;
             overflow-y: auto;
         }
 
-        .sidebar h3 {
-            color: #00aaff;
+        .contacts h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
         }
 
         .contact {
-            display: flex;
+            /*display: flex;*/
             align-items: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            /*border-radius: 8px;*/
-            background-color: #2a2f3a;
+            padding: 10px 0;
             cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .contact:hover {
-            background-color: #4e5d6a;
         }
 
         .contact img {
@@ -92,257 +51,145 @@
             margin-right: 10px;
         }
 
-        .contact .name {
-            font-weight: bold;
+        .contact-name {
+            font-size: 1em;
+            color: #ddd;
         }
 
-        .chat-container {
+        .chat-main {
+            width: 75%;
             display: flex;
             flex-direction: column;
-            flex-grow: 1;
-            height: 100%;
+            background-color: #333;
         }
 
         .chat-header {
-            /*background-color: #2a2f3a;*/
-            color: white;
-            /*padding: 10px 20px;*/
-            border-radius: 10px 10px 0 0;
+            padding: 15px;
+            background-color: #444;
+            text-align: center;
         }
 
-        .chat-box {
-            flex-grow: 1;
-            overflow-y: auto;
+        .chat-messages {
+            flex: 1;
             padding: 20px;
-            /*background-color: #2a2f3a;*/
-            border-radius: 0 0 10px 10px;
-            margin-bottom: 15px;
-            height: 130%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .message {
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 60%;
+            position: relative;
+        }
+
+        .sent {
+            background-color: #1f8ef1;
+            align-self: flex-end;
+            color: #fff;
+        }
+
+        .received {
+            background-color: #3a3b3c;
+            align-self: flex-start;
+            color: #ddd;
+        }
+
+        .chat-input {
             display: flex;
-            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #444;
         }
 
-        .message.user {
-            justify-content: flex-end;
-        }
-
-        .message .content {
-            /*max-width: 70%;*/
-            padding: 12px;
-            border-radius: 20px;
-            background-color: #4e5d6a;
-            word-wrap: break-word;
-        }
-
-        .message.user .content {
-            background-color: #00aaff;
-        }
-
-        .input-box {
-            padding: 12px;
-            /*background-color: #222a35;*/
-            border-radius: 10px;
-        }
-
-        .input-box input {
-            flex-grow: 1;
-            width: 90%;
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 1em;
             border: none;
-            background-color: #2a2f3a;
-            color: white;
-            border-radius: 20px;
-            padding: 10px 15px;
+            border-radius: 5px;
             margin-right: 10px;
-            font-size: 16px;
+            background-color: #555;
+            color: #ddd;
         }
 
-        .input-box button {
+        .chat-input button {
+            padding: 10px 15px;
+            background-color: #1f8ef1;
             border: none;
-            background-color: #4e5d6a;
-            color: white;
-            border-radius: 50%;
-            padding: 12px;
+            color: #fff;
+            font-size: 1em;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 18px;
         }
 
-        .input-box button:hover {
-            background-color: #00aaff;
+        .chat-input input:focus,
+        .chat-input button:focus {
+            outline: none;
+        }
+        /*Soat*/
+
+         .timestamp {
+             font-size: 0.9em;
+             color: black; /* Qora rang */
+             margin-left: 10px;
+         }
+
+
+        /*CHATGPT KOD MESSAGE UCHUN */
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-container {
+            display: flex;
+            flex-direction: column;
+            margin: 10px 0;
+        }
+
+        .message {
+            padding: 12px 18px; /* Xabarni biroz uzunroq qilish */
+            border-radius: 25px; /* Qirralarini aylantirish */
+            max-width: 80%; /* Xabarning maksimal kengligi */
+            word-wrap: break-word;
+            font-size: 1em;
+        }
+
+        /* Receiver xabarlarini chap tomonda ko'rsatish (yashil rang) */
+        .received {
+            align-self: flex-start;
+            background-color: #4caf50; /* Yashil */
+            color: white;
+        }
+
+        /* Sender xabarlarini o'ng tomonda ko'rsatish (ko'k rang) */
+        .sent {
+            align-self: flex-end;
+            background-color: #2196f3; /* Ko'k */
+            color: white;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 2px;
         }
 
     </style>
+
+    @vite(['resources/js/app.js', 'resources/sass/app.scss'])
 </head>
 <body>
-<div class="container" id="chat">
-
-    <!-- Sidebar for contacts -->
-    <div class="sidebar">
-        <h3>Contacts</h3>
+<div class="chat">
 
 
-        {{--        @dump($users)--}}
-        @foreach ($users as $user)
-            @php
-                $userId = json_encode($user->id);
-            @endphp
-            <button id="contact" class="contact" data-user-id="{{ $user->id }}">
-                <img src="{{ asset('images/user.jpeg') }}" alt="User Image">
-                <div>
-                    <div class="name">{{ $user->name }}</div>
-                </div>
-            </button>
-
-            {{--            <a href="/contact/user_id/{{$user->id }}"  id="UserId" class="contact">--}}
-            {{--                <img src="{{ asset('images/user.jpeg') }}" alt="User Image">--}}
-            {{--                <div>--}}
-            {{--                    <div class="name">{{ $user->name }}</div>--}}
-            {{--                </div>--}}
-            {{--            </a>--}}
-
-        @endforeach
-
-        <!-- Add more contacts here -->
-    </div>
-
-    <!-- Chat container -->
-    <div class="chat-container">
-        <div class="chat-header" id="chatHeader">
-
-        </div>
-        <div class="chat-box" id="chatBox">
-            <!-- Messages will appear here -->
-            @if (isset($messages))
-                @foreach($messages as $message)
-                    @if ($message->sender_id == Auth::id())
-                        <div class="message user">
-                            <div class="message">
-                                <div class="content">{{ $message->text }}
-                                    <div class="time">{{ $message->created_at->format('h:i A') }}</div>
-
-                                </div>
-                            </div>
-                        </div>
-                    @elseif($message->sender_id == $receiverUSER->id)
-                        <div class="message receiver">
-                            <div class="message">
-                                <div class="content">{{ $message->text }}
-                                    <div class="time">{{ $message->created_at->format('h:i A') }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                @endforeach
-            @endif
 
 
-        </div>
-        <div class="input-box" id="inputBox">
-{{--           forma keladi shu yerga--}}
-            <input type="text" id="messageInput" name="text" placeholder="Type a message..." required>
-            <button type="button" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
-            <input type="hidden" id="receiver_id" value="${receiverUSER.id}">
-            <input type="hidden" id="sender_id" value="${senderUSER.id}">
 
 
-        </div>
-    </div>
+
 </div>
-<script>
-    document.querySelectorAll('.contact').forEach((button) => {
-        button.addEventListener('click', function () {
-            const userId = this.getAttribute('data-user-id');
-            fetch(`http://localhost:8080/contact/user_id/${userId}`)
-                .then(response => response.json())
-                .then(data => {
-                    sendUserId(data)
-                })
-        });
-    });
-
-
-
-    function sendUserId(data) {
-        const chat = document.querySelector("#chatBox");
-        const messages = data.messages;
-        const receiverUSER = data.receiverUSER;
-        const senderUSER = data.senderUSER;
-        chat.innerHTML = "";
-
-        messages.forEach(message => {
-            // senderUSER.id ni ishlatamiz
-            if (message.sender_id === senderUSER.id) {
-                chat.innerHTML += `
-                <div class="message user">
-                    <div class="message">
-                        <div class="content">${message.text}
-                            <div class="time">${new Date(message.created_at).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}</div>
-                        </div>
-                    </div>
-                </div>`;
-            } else if (message.sender_id === receiverUSER.id) {
-                chat.innerHTML += `
-                <div class="message receiver">
-                    <div class="message">
-                        <div class="content">${message.text}
-                            <div class="time">${new Date(message.created_at).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}</div>
-                        </div>
-                    </div>
-                </div>`;
-            }
-        });
-        const inputBoxt = (receiverUSER, senderUSER) => {
-            const inputbox = document.querySelector("#inputBox");
-            inputbox.innerHTML = `
-            <input type="text" id="messageInput" name="text" placeholder="Type a message..." required>
-            <button type="button" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
-            <input type="hidden" id="receiver_id" value="${receiverUSER.id}">
-            <input type="hidden" id="sender_id" value="${senderUSER.id}">
-
-`;
-        };
-
-        inputBoxt(receiverUSER, senderUSER);
-
-        const button = document.querySelector('#sendMessageBtn');
-
-        button.addEventListener('click', () => {
-            const messageInput = document.querySelector('#messageInput');
-            const message = messageInput.value;
-            const receiverUSER = document.querySelector('#receiver_id')
-            const senderUSER = document.querySelector('#sender_id')
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-            fetch("http://localhost:8080/send-message", {
-                method: "POST",
-                headers:{
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrfToken
-                },
-                body: JSON.stringify({
-                    text: message,
-                    receiver_id: receiverUSER.value,
-                    sender_id: senderUSER.value
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    sendUserId(data)
-                })
-
-        });
-
-    }
-
-</script>
 </body>
 </html>

@@ -19,7 +19,10 @@ RUN apt-get update && apt-get install -y \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && apt-get clean
+
+
 
 COPY . /var/www
 
@@ -29,3 +32,6 @@ RUN npm install
 
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
+
+EXPOSE 8000
+EXPOSE 5173

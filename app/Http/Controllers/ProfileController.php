@@ -13,15 +13,15 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function index(Request $request): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
+    public function index(Request $request)
     {
-//        dd($request->all());
-        $users = User::all() ->except(Auth::user()->id);
-//        $MYmessages = Message::where('sender_id', Auth::id())->get();
-//        $receivermessages = Message::where('receiver_id', 2)->get();
+        $users = User::all()->except(Auth::user()->id);
 
-        return view('chat',['users' => $users]);
+        return response()->json([
+            'users' => $users,
+        ]);
     }
+
 
 
 

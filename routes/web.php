@@ -11,11 +11,15 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/', [\App\Http\Controllers\ProfileController::class, 'index'])->name('chat');
+    Route::view("/", "chat")->name('chat');
+
+    Route::get("/contacts", [\App\Http\Controllers\ProfileController::class, 'index'])->name('contacts');
 
     Route::get("/contact/user_id/{user_id}", [\App\Http\Controllers\UserController::class, 'index'])->name('getMessages');
 
     Route::post('/send-message', [\App\Http\Controllers\MessageController::class, 'sendMessage'])->name('send-message');
+
+    Route::get("/messages/sender_id/{sender_id}/receiver_id/{receiver_id}", [\App\Http\Controllers\MessageController::class, 'index'])->name('messages');
 
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
