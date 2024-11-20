@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Shabloni</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e5e5e5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            display: flex;
+            width: 80%;
+            height: 90vh;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: width 0.3s;
+        }
+
+        .sidebar, .user-info-sidebar {
+            width: 25%;
+            background-color: #1c1c1c;
+            padding: 20px;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s;
+        }
+
+        .user-info-sidebar {
+            border-left: 1px solid #333;
+        }
+
+        .sidebar h2, .user-info-sidebar h2 {
+            color: #e5e5e5;
+            margin-bottom: 20px;
+        }
+
+        .contact {
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            background-color: #292929;
+            border-radius: 4px;
+            color: #e5e5e5;
+        }
+
+        .contact.active, .contact:hover {
+            background-color: #333;
+        }
+
+        .chat-window {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #222;
+            transition: width 0.3s;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background-color: #333;
+            border-bottom: 1px solid #444;
+            text-align: center;
+            position: relative;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chat-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px;
+            max-width: 60%;
+            border-radius: 5px;
+        }
+
+        .user {
+            align-self: flex-end;
+            background-color: #4a90e2;
+            color: white;
+            border-radius: 12px 12px 0 12px;
+            margin-left: auto;
+        }
+
+        .friend {
+            align-self: flex-start;
+            background-color: #666;
+            color: white;
+            border-radius: 12px 12px 12px 0;
+            margin-right: auto;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #333;
+            border-top: 1px solid #444;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #555;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .chat-input button {
+            padding: 10px 15px;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            color: #e5e5e5;
+        }
+
+        .user-info img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #555;
+            margin-bottom: 15px;
+        }
+
+        .user-info h3 {
+            margin-bottom: 5px;
+        }
+
+        .user-info p {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        /* Toggle uchun uslublar */
+        .collapsed {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .chat-window.expanded {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <!-- Chap yon panel -->
+    <div class="sidebar">
+        <h2>Xabarlar</h2>
+        <div class="contact active">Gulasal</div>
+        <div class="contact">Umidjon Rajabov</div>
+        <div class="contact">Matkarimov</div>
+        <div class="contact">Anvar</div>
+        <div class="contact">baxtiyorvich7660</div>
+    </div>
+
+    <!-- Chat oyna -->
+    <div class="chat-window">
+        <div class="chat-header">
+            <h3>Gulasal</h3>
+            <button class="toggle-btn" onclick="toggleSidebar()">Toggle</button>
+        </div>
+        <div class="chat-content">
+            <!-- Foydalanuvchi va suhbat xabarlari -->
+            <div class="message user">
+                <p>Tushimda meni ko'ring 😌</p>
+            </div>
+            <div class="message friend">
+                <p>Tushingda tinch qo'y😂😂😂</p>
+            </div>
+            <div class="message user">
+                <p>Ko'p uxlamang lekin 😂😂😂</p>
+            </div>
+            <div class="message friend">
+                <p>15 soat uxlabman o'ziyam 😂😂😂</p>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" placeholder="Xabar yozing...">
+            <button type="button">Yuborish</button>
+        </div>
+    </div>
+
+    <!-- O'ng yon panel -->
+    <div class="user-info-sidebar">
+        <h2>Akaunt ma'lumotlari</h2>
+        <div class="user-info">
+            <img src="#" alt="Foydalanuvchi rasmi"> <!-- Rasm uchun joy -->
+            <h3>Foydalanuvchi ismi</h3>
+            <p>Email: user@example.com</p>
+            <p>Qo'shimcha ma'lumot</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.querySelector(".sidebar");
+        const userSidebar = document.querySelector(".user-info-sidebar");
+        const chatWindow = document.querySelector(".chat-window");
+
+        sidebar.classList.toggle("collapsed");
+        userSidebar.classList.toggle("collapsed");
+
+        if (sidebar.classList.contains("collapsed") && userSidebar.classList.contains("collapsed")) {
+            chatWindow.classList.add("expanded");
+        } else {
+            chatWindow.classList.remove("expanded");
+        }
+    }
+</script>
+</body>
+</html>

@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@vue/compiler-sfc": "^3.5.12",
+        "date-fns": "^4.1.0",
         "vue": "^3.5.12"
     }
 }
