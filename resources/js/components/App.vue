@@ -1,78 +1,63 @@
 <template>
-    <div class="chat-container">
-        <!-- Chap yon panel -->
-        <div class="sidebar">
-            <h2>Contacts</h2>
-            <div class="contact">
-                <div v-for="user in data.users" :key="user.id" class="contact-info">
-                    <button class="contact-button" @click="openChat(user.id)">
-                        {{ user.name }}
-                    </button>
-                </div>
-            </div>
-
-
-        </div>
-
-
-        <!-- Chat oyna -->
-        <div class="chat-window">
-            <div v-if="receiverUSER" class="chat-header">
-                <h3>{{ receiverUSER.name }}</h3>
-<!--                <h3 style="margin-left: auto;">{{ senderUSER.name }}</h3>-->
-                <button class="toggle-btn" onclick="toggleSidebarAndChatInput()">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5" />
-                    </svg>
-                </button>
-
-            </div>
-
-
-            <div v-if="MESSAGES" class="chat-content" ref="chatContent">
-                <div v-for="MESSAGE in MESSAGES" :key="MESSAGE.id"
-                     :class="{'message user': MESSAGE.sender_id === senderUSER.id, 'message friend': MESSAGE.sender_id === receiverUSER.id}">
-                    <p>{{ MESSAGE.text }}</p>
-                    <span class="message-time">{{ MESSAGE.created_at }}</span>
-                </div>
-            </div>
-            <!-- `v-show` orqali elementni ko'rsatish/yashirish -->
-            <div v-show="MESSAGES" class="chat-input">
-                <form @submit.prevent="inputText">
-                    <input
-                        v-model="message"
-                        type="text"
-                        placeholder="Type a message..."
-                    />
-                    <input type="hidden" :value="senderUSER.id" name="sender_id"/>
-                    <input type="hidden" :value="receiverUSER.id" name="receiver_id"/>
-                    <button type="submit">Send</button>
-                </form>
-            </div>
-
-
-
-
-        </div>
-        <!-- O'ng yon panel -->
-        <div v-if="senderUSER">
-            <div class="user-info-sidebar">
-                <h2>Akaunt ma'lumotlari</h2>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3>Recent Chats</h3>
+        <div v-for="user in data.users" class="user-list">
+            <div class="user" @click="openChat(user.id)">
+                <img src="https://via.placeholder.com/50" alt="Avatar" class="user-avatar">
                 <div class="user-info">
-                    <img :src="getImageUrl()" alt="Foydalanuvchi rasmi">
-                    <h3>{{ senderUSER.name }}</h3>
-                    <p>Email: {{ senderUSER.email }}</p>
+                    <h3 class="user-name">{{ user.name }}</h3>
+                    <p class="user-status">Online</p>
                 </div>
             </div>
+
+        </div>
+    </div>
+
+    <!-- Chat panel -->
+    <div class="chat-panel">
+        <div v-if="receiverUSER.name" class="chat-header">
+            <div >
+                <h2>{{ receiverUSER.name }}</h2>
+                <p class="user-status"> Online</p>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div v-for="message in MESSAGES" :key="message.id">
+                <div v-if="message.sender_id === receiverUSER.id" class="message sender">
+                    <img :src="receiverUSER.avatar" alt="Receiver Avatar" class="avatar" />
+                    <p>{{ message.text }}</p>
+                    <span class="time">{{ formatDate(message.created_at) }}</span> <!-- Soat va minut -->
+                </div>
+                <div v-if="message.sender_id === senderUSER.id" class="message receiver">
+                    <img :src="senderUSER.avatar" alt="Sender Avatar" class="avatar" />
+                    <p>{{ message.text }}</p>
+                    <span class="time">{{ formatDate(message.created_at) }}</span> <!-- Soat va minut -->
+                </div>
+            </div>
+        </div>
+
+
+        <div v-if="receiverUSER.name" class="chat-input">
+            <form @submit.prevent="inputText">
+                <input
+                    v-model="message"
+                    type="text"
+                    placeholder="Type a message..."
+                />
+                <input type="hidden" :value="senderUSER.id" name="sender_id"/>
+                <input type="hidden" :value="receiverUSER.id" name="receiver_id"/>
+
+                <button type="submit" id="sendBtn">➤</button>
+            </form>
         </div>
     </div>
 
 </template>
-<script>
-import {ref} from 'vue';
+<script >
+import {ref, watch} from 'vue';
 import axios from 'axios';
-import { format } from 'date-fns';
-
+import {format} from 'date-fns';
 
 
 export default {
@@ -81,7 +66,6 @@ export default {
         axios.get("http://localhost:8000/contacts")
             .then(response => {
                 data.value = response.data
-                console.log(data.value)
             })
             .catch(error => {
                 console.error(error);
@@ -106,10 +90,12 @@ export default {
                 axios.get(`http://localhost:8000/messages/sender_id/${senderUSER.value.id}/receiver_id/${receiverUSER.value.id}`)
                     .then(response => {
                         barchaMessage.value = response.data
+
                     })
                     .catch(error => {
                         console.error('Error fetching messages:', error);
                     });
+
 
                 MESSAGES.value = barchaMessage.value[0].map(item => ({
                     id: item.id,
@@ -119,11 +105,23 @@ export default {
                     text: item.text
                 }));
 
+
             }
-            setInterval(BarchaMessages, 1000);
-
-
+            setInterval(() => {
+                BarchaMessages();
+                scrollToBottom(); // Xabarlar tugagandan so'ng pastga siljitish
+            }, 1000);
         }
+
+        const scrollToBottom = () => {
+            const messagesContainer = document.getElementById("chatMessages");
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        };
+
+
+
 
         const message = ref('');
         const sender_id = ref("");
@@ -139,23 +137,37 @@ export default {
             })
                 .then(response => {
                     console.log('Message sent successfully:', response.data);
+                    if (response.data) {
+                        watch(MESSAGES, () => {
+                            scrollToBottom(); // Xabarlar yangilanganda pastga siljish
+                        });
+                        scrollToBottom(); // Xabarlar tugagandan so'ng pastga siljitish
+                        playNotificationSound();
+                    }
                 })
                 .catch(error => {
                     console.error('Error sending message:', error);
                 });
 
-            message.value = ''; // Inputni tozalash
+            message.value = '';
         }
 
-        // Rasm yo'lini qaytaruvchi funksiya
         const getImageUrl = () => {
             return `${window.location.origin}/images/user.jpeg`;
         };
 
         const formatDate = (date) => {
-            // ISO formatdagi sanani faqat soat va daqiqaga o'zgartirish
             return format(new Date(date), 'HH:mm');  // Soat va daqiqa
         };
+
+        //Sound Notification
+        const notificationSound = new Audio('/sounds/NotificationSound.wav');
+        const playNotificationSound = () => {
+            notificationSound.play().catch((error) => {
+                console.error('Notification sound failed to play:', error);
+            });
+        };
+
 
 
         return {
@@ -176,7 +188,7 @@ export default {
 
 </script>
 <style>
-/* Umumiy sozlamalar */
+/* Universal styles */
 * {
     margin: 0;
     padding: 0;
@@ -184,15 +196,13 @@ export default {
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #000; /* Fond qora rangda */
-    color: #fff; /* Matn oq rangda */
-    line-height: 1.6;
-    font-size: 16px;
-    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to bottom, rgba(15, 15, 31, 0.9), rgba(30, 30, 45, 0.9));
+    color: #fff;
+    height: 100vh;
+    display: flex;
 }
 
-/* Chat konteyneri */
 .chat-container {
     display: flex;
     width: 100%;
@@ -200,262 +210,244 @@ body {
     overflow: hidden;
 }
 
-/* Chap yon panel */
+/* Sidebar styles */
 .sidebar {
-    width: 250px;
-    background-color: #222; /* Qora rang */
-    color: white;
+    width: 25%;
+    background: rgba(30, 30, 45, 0.7); /* Transparent background */
     padding: 20px;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    transition: transform 0.3s ease;
-}
-
-.sidebar.hidden {
-    transform: translateX(-100%); /* Chapga yashirish */
-}
-
-/* Chat oynasi */
-.chat-window {
-    margin-left: 250px;
-    margin-right: 300px;
-    width: calc(100% - 550px); /* Sidebarlar mavjud bo'lganda kenglik */
     display: flex;
     flex-direction: column;
-    height: 100%;
-    background-color: #000;
-    transition: margin 0.3s ease, width 0.3s ease;
+    overflow-y: auto;
 }
 
-.chat-window.full-width {
+.sidebar h3 {
+    margin-bottom: 20px;
+    color: #a0a0b1;
+    font-size: 16px;
+}
+
+.search-box input {
     width: 100%;
-    margin-left: 0;
-    margin-right: 0;
+    padding: 10px;
+    border: none;
+    border-radius: 25px;
+    background: rgba(43, 43, 61, 0.9);
+    color: #fff;
+    outline: none;
+    margin-bottom: 20px;
+    font-size: 14px;
 }
 
-/* Chat header */
-.chat-header {
+.user-list {
+    margin-bottom: 20px;
+}
+.user {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background-color: #000;
-    color: white;
-    padding: 15px;
-}
-
-.chat-header h3 {
-    margin: 0;
-}
-
-.toggle-btn {
-    background-color: transparent; /* Tugma foni yo'q */
-    border: none; /* Ramkasiz tugma */
-    cursor: pointer; /* Tugma ustida ko'rsatkich */
-    padding: 10px; /* Tugma ichidagi bo'sh joy */
-    display: flex;
-    justify-content: center; /* Ikonkani markazga joylashtirish */
-    align-items: center; /* Ikonkani markazga joylashtirish */
-}
-
-/* Ikonka uchun o'lcham va rang */
-.toggle-btn svg {
-    width: 24px;  /* Ikonkani kengligi */
-    height: 24px; /* Ikonkani balandligi */
-    color: white; /* Ikonkani rangi */
-}
-
-/* Chat container */
-.chat-content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-    overflow-y: auto; /* Scroll qo'shish */
-}
-
-/* Umumiy xabar styli */
-.message {
-    max-width: 70%;
-    padding: 7px;
+    margin-bottom: 15px;
+    padding: 10px 15px;
     border-radius: 10px;
-    font-size: 16px;
-    line-height: 1.5;
-    display: inline-block;
-}
-/* created_at vaqtini qora rangda va pastda ko'rsatish */
-.message-time {
-    text-align: right; /* Matnni o'nga joylashtiradi */
-    display: block;
-    margin-top: 5px;
-    color: black;  /* Qora rang */
-    font-size: 12px;  /* Vaqt uchun kichikroq shrift */
-    font-style: italic;  /* Vaqtni qiyshaytirish */
+    background-color: rgba(34, 34, 34, 0.8); /* Qoraroq va shaffof fon */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Qorong‘i soyalar */
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-
-/* Sender (o'ng tomonga) */
-.message.user {
-    align-self: flex-end; /* O'ng tomonga joylashadi */
-    background-color: #cce5ff; /* Moviy fon */
-    color: #004085; /* Matn rangi */
+.user:hover {
+    background-color: rgba(54, 54, 54, 0.9); /* Hoverda biroz ochroq rang */
+    transform: translateY(-3px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
 }
 
-/* Receiver (chap tomonga) */
-.message.friend {
-    align-self: flex-start; /* Chap tomonga joylashadi */
-    background-color: #d4edda; /* Yashil fon */
-    color: #155724; /* Matn rangi */
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.5); /* Shaffof oq chegara */
+    transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-
-/* O'ng yon panel */
-.user-info-sidebar {
-    width: 300px;
-    background-color: #222; /* Qora rang */
-    color: white;
-    padding: 20px;
-    height: 100%;
-    position: fixed;
-    right: 0;
-    top: 0;
-    transition: transform 0.3s ease;
-}
-
-.user-info-sidebar.hidden {
-    transform: translateX(100%); /* O‘ngga yashirish */
-}
-
-.user-info-sidebar h2 {
-    color: white;
-    margin-bottom: 20px;
+.user-avatar:hover {
+    transform: scale(1.1);
+    border-color: rgba(0, 123, 255, 1); /* Hoverda ko‘k rang */
 }
 
 .user-info {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.user-info img {
-    width: 80px; /* Rasmning eni */
-    height: 80px; /* Rasmning balandligi */
-    border-radius: 50%; /* Doira shakli uchun */
-    object-fit: cover; /* Rasmni doira ichida to'liq ko'rsatish */
-    margin-bottom: 20px;
-}
-
-.user-info h3 {
-    margin: 0;
-    color: white;
+.user-name {
     font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #fff; /* Oq rang */
+}
+
+.user-status {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7); /* Shaffof oq */
+    margin: 5px 0 0;
+}
+
+.user:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.user img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #444;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+.user-info {
+    margin-left: 15px;
+}
+
+.user-info h4 {
+    font-size: 14px;
+    margin-bottom: 5px;
 }
 
 .user-info p {
-    color: #ccc;
-    font-size: 14px;
-    margin-top: 5px;
-}
-/* Umumiy chat inputning dizayni */
-.chat-input {
-    position: relative;
-    width: 100%;
-    top: 450px;
-    padding: 10px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    transition: width 0.3s ease, padding 0.3s ease;
+    font-size: 12px;
+    color: #006400;
 }
 
-/* Default holat: input kichik */
-.chat-input input {
-    width: 480%; /* Default holatda kichik bo'ladi */
+/* Chat panel styles */
+.chat-panel {
     flex: 1;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 25px;
-    background-color: #444;
-    color: white;
-    font-size: 16px;
-    outline: none;
-    transition: width 0.3s ease, background-color 0.3s ease;
-}
-
-.chat-input input:focus {
-    background-color: #555;
-}
-
-/* Toggle bosilganda kengayuvchi chat input */
-.chat-input.expanded {
-    width: 565%; /* Kengaygan holat */
-    padding: 10px 30px;
-}
-
-.chat-input.expanded input {
-    width: 670%; /* Kengaygan input */
-}
-
-/* Collapse holati */
-.chat-input.collapsed button {
-    display: none;
-    opacity: 0; /* Tugma ko'rinmaydi */
-}
-
-.chat-input {
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-}
-
-/* Media queries (responsive dizayn) */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 100%;
-        position: static;
-    }
-
-    .chat-window {
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .user-info-sidebar {
-        width: 100%;
-        position: static;
-        margin-top: 20px;
-    }
-}
-
-.contact {
     display: flex;
     flex-direction: column;
+    background: rgba(18, 18, 27, 0.7); /* Transparent background */
 }
 
-.contact-info {
-    margin-bottom: 10px;
+.chat-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(30, 30, 45, 0.9); /* Slightly opaque */
+    border-bottom: 1px solid #333;
 }
 
-.contact-button {
-    background-color: #222; /* Qora rang */
-    color: white; /* Matn rangi */
-    border: none; /* Ramka yo'q */
-    padding: 15px; /* Ichki bo'shliq */
-    text-align: left; /* Matnni chapga joylashtirish */
-    text-decoration: none; /* Matn ostidagi chiziqni olib tashlash */
-    display: block; /* Tugmani blok shaklida ko'rsatish */
-    font-size: 18px; /* Matnning o'lchami */
-    width: 100%; /* Kengligini to'liq qilamiz */
-    border-radius: 10px; /* Yumshoq burchaklar */
-    cursor: pointer; /* Ko'rsatkichi qo'lga o'zgaradi */
-    box-sizing: border-box; /* Padding hisobga olinadi */
+.chat-header h2 {
+    font-size: 18px;
+    color: #fff;
 }
 
-.contact-button h3 {
-    margin: 0; /* Matnning yuqori va pastki bo'shliqni olib tashlash */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    scroll-behavior: smooth;
+}
+#chatMessages {
+    overflow-x: hidden;  /* Yon tomondagi scrollni yashirish */
+    overflow-y: auto;    /* Faol vertikal scrollni yoqish */
+    max-height: 787px;    /* Chat uchun maksimal balandlik */
+    padding: 10px;
 }
 
-.contact-button:hover {
-    background-color: #444; /* Hover holatida fon rangi o'zgaradi */
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start; /* Xabarni boshlanishdan joylashtirish */
+    position: relative;
+    gap: 10px; /* Avatar va matn orasida masofa */
 }
 
+.message.sender {
+    align-items: flex-start;
+    flex-direction: row; /* Foydalanuvchi xabarini chapga joylashtirish */
+}
+
+.message.receiver {
+    align-items: flex-end;
+    flex-direction: row-reverse; /* Receiver xabarini o'nga joylashtirish */
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover; /* Rasmni to'liq joylashtirish */
+}
+
+.message.sender .avatar {
+    margin-left: 0; /* Foydalanuvchi avatarini chapga joylashtirish */
+}
+
+.message.receiver .avatar {
+    margin-right: 0; /* Foydalanuvchi avatarini o'nga joylashtirish */
+}
+
+.message p {
+    background: rgba(30, 136, 229, 0.9); /* Transparent sender message */
+    color: #fff;
+    padding: 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    max-width: 70%; /* Xabarlar kengligini cheklash */
+}
+
+.message.receiver p {
+    background: rgba(68, 211, 107, 0.9); /* Transparent receiver message */
+}
+
+.message .time {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 5px;
+    display: block;
+}
+.chat-input {
+    position: absolute; /* Position absolute qo'shildi */
+    bottom: 0; /* Inputni pastga joylashtirish */
+    left: 25%; /* O'ngga surish uchun chapdan 5% masofa */
+    right: 0; /* O'ng tomondan cheklash */
+    display: flex;
+    padding: 15px;
+    background: rgba(30, 30, 45, 0.9); /* Transparent input background */
+    border-top: 1px solid #333;
+}
+
+
+.chat-input input {
+    flex: 1;
+    width: 670%;
+    padding: 10px;
+    border: none;
+    border-radius: 25px;
+    background: rgba(43, 43, 61, 0.9); /* Transparent input field */
+    color: #fff;
+    margin-right: 10px;
+    font-size: 14px;
+    outline: none;
+}
+
+.chat-input button {
+    display: none;
+    background: rgba(10, 132, 255, 0.9); /* Transparent send button */
+    border: none;
+    border-radius: 50%;
+    padding: 10px 15px;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.chat-input button:hover {
+    background: rgba(0, 91, 181, 0.9);
+}
 </style>

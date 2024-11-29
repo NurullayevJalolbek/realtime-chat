@@ -55,15 +55,20 @@ services:
       - app-network  # Connect to the custom network
 
   node:
-    container_name: nodes
-    image: node:20
+    image: node:22
+    container_name: node
     working_dir: /var/www
     volumes:
-      - .:/var/www
+      - ./:/var/www
+    tty: true
+    ports:
+      - "5173:5173"  # For Vite development server
+    environment:
+      - NODE_ENV=development
+    command: >
+      sh -c "npm install && npm run dev"
     networks:
-      - app-network  # Corrected network to use app-network
-    command: bash -c "npm install && npm run build && npm run dev"
-
+      - app-network
 
 networks:
   app-network:

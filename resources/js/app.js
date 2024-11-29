@@ -35,4 +35,4 @@ app.component('app', App);
  * scaffolding. Otherwise, you will need to add an element yourself.
  */
 
-app.mount('.chat');
+app.mount('#chat');
