@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 
+Route::post('/broadcasting/auth', function () {
+    return Auth::user();
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');

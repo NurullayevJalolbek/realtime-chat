@@ -2,7 +2,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <h3>Recent Chats</h3>
-        <div v-for="user in data.users" class="user-list">
+        <div v-for="user in data" class="user-list">
             <div class="user" @click="openChat(user.id)">
                 <img src="https://via.placeholder.com/50" alt="Avatar" class="user-avatar">
                 <div class="user-info">
@@ -17,7 +17,7 @@
     <!-- Chat panel -->
     <div class="chat-panel">
         <div v-if="receiverUSER.name" class="chat-header">
-            <div >
+            <div>
                 <h2>{{ receiverUSER.name }}</h2>
                 <p class="user-status"> Online</p>
             </div>
@@ -25,12 +25,12 @@
         <div class="chat-messages" id="chatMessages">
             <div v-for="message in MESSAGES" :key="message.id">
                 <div v-if="message.sender_id === receiverUSER.id" class="message sender">
-                    <img :src="receiverUSER.avatar" alt="Receiver Avatar" class="avatar" />
+                    <img :src="receiverUSER.avatar" alt="Receiver Avatar" class="avatar"/>
                     <p>{{ message.text }}</p>
                     <span class="time">{{ formatDate(message.created_at) }}</span> <!-- Soat va minut -->
                 </div>
                 <div v-if="message.sender_id === senderUSER.id" class="message receiver">
-                    <img :src="senderUSER.avatar" alt="Sender Avatar" class="avatar" />
+                    <img :src="senderUSER.avatar" alt="Sender Avatar" class="avatar"/>
                     <p>{{ message.text }}</p>
                     <span class="time">{{ formatDate(message.created_at) }}</span> <!-- Soat va minut -->
                 </div>
@@ -54,24 +54,28 @@
     </div>
 
 </template>
-<script >
-import {ref, watch} from 'vue';
+<script>
+import {onMounted, ref, watch} from 'vue';
 import axios from 'axios';
 import {format} from 'date-fns';
 
 
 export default {
     setup() {
-        const data = ref([])
-        axios.get("http://localhost:8000/contacts")
-            .then(response => {
-                data.value = response.data
-            })
-            .catch(error => {
-                console.error(error);
-            });
+        const CONTACTS = ref()
+        const SENDERUSER = ref();
+        const contacts = () => {
+            axios.get("http://localhost:8000/contacts")
+                .then(response => {
+                    CONTACTS.value = response.data.users
+                    SENDERUSER.value = response.data.senderUSER
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
 
-        const messages = ref([])
+
         const senderUSER = ref([])
         const receiverUSER = ref([])
         const barchaMessage = ref([])
@@ -81,37 +85,37 @@ export default {
                 .then(response => {
                     senderUSER.value = response.data.senderUSER
                     receiverUSER.value = response.data.receiverUSER
-                    // messages.value = response.data.messages
+                    MESSAGES.value = response.data.messages
                 })
                 .catch(error => {
                     console.error(error);
                 });
-            const BarchaMessages = () => {
-                axios.get(`http://localhost:8000/messages/sender_id/${senderUSER.value.id}/receiver_id/${receiverUSER.value.id}`)
-                    .then(response => {
-                        barchaMessage.value = response.data
 
-                    })
-                    .catch(error => {
-                        console.error('Error fetching messages:', error);
-                    });
-
-
-                MESSAGES.value = barchaMessage.value[0].map(item => ({
-                    id: item.id,
-                    sender_id: item.sender_id,
-                    receiver_id: item.receiver_id,
-                    created_at: item.created_at,
-                    text: item.text
-                }));
-
-
-            }
-            setInterval(() => {
-                BarchaMessages();
-                scrollToBottom(); // Xabarlar tugagandan so'ng pastga siljitish
-            }, 1000);
         }
+
+
+        const BarchaMessages = () => {
+            axios.get(`http://localhost:8000/messages/sender_id/${senderUSER.value.id}/receiver_id/${receiverUSER.value.id}`)
+                .then(response => {
+                    barchaMessage.value = response.data
+
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                });
+
+
+            MESSAGES.value = barchaMessage.value[0].map(item => ({
+                id: item.id,
+                sender_id: item.sender_id,
+                receiver_id: item.receiver_id,
+                created_at: item.created_at,
+                text: item.text
+            }));
+
+
+        }
+
 
         const scrollToBottom = () => {
             const messagesContainer = document.getElementById("chatMessages");
@@ -119,8 +123,6 @@ export default {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
         };
-
-
 
 
         const message = ref('');
@@ -131,12 +133,15 @@ export default {
             receiver_id.value = receiverUSER.value.id;
 
             axios.post('http://localhost:8000/send-message', {
-                sender_id: sender_id.value, // To'g'ri: sender_id.value to'g'ridan-to'g'ri qiymat
-                receiver_id: receiver_id.value, // To'g'ri: receiver_id.value to'g'ridan-to'g'ri qiymat
+                sender_id: sender_id.value,
+                receiver_id: receiver_id.value,
                 message: message.value
+            }, {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
             })
                 .then(response => {
-                    console.log('Message sent successfully:', response.data);
                     if (response.data) {
                         watch(MESSAGES, () => {
                             scrollToBottom(); // Xabarlar yangilanganda pastga siljish
@@ -149,7 +154,7 @@ export default {
                     console.error('Error sending message:', error);
                 });
 
-            message.value = '';
+            message.value = ''; // Xabarni bo'shatish
         }
 
         const getImageUrl = () => {
@@ -168,12 +173,26 @@ export default {
             });
         };
 
+        onMounted(() => {
+            contacts();
+        });
+
+
+        watch([senderUSER, receiverUSER], () => {
+            console.log("SenderUSER", senderUSER.value.id, "ReceiverUSER", receiverUSER.value.id)
+
+            window.Echo.private(`chat_${senderUSER.value.id}_${receiverUSER.value.id}`)
+                .listen('GotMessage', (event) => {
+                    console.log(event.messages)
+                    BarchaMessages();
+                })
+        })
+
 
 
         return {
-            data,
+            data: CONTACTS,
             openChat,
-            messages,
             senderUSER,
             receiverUSER,
             inputText,
@@ -241,6 +260,7 @@ body {
 .user-list {
     margin-bottom: 20px;
 }
+
 .user {
     display: flex;
     align-items: center;
@@ -352,10 +372,11 @@ body {
     padding: 20px;
     scroll-behavior: smooth;
 }
+
 #chatMessages {
-    overflow-x: hidden;  /* Yon tomondagi scrollni yashirish */
-    overflow-y: auto;    /* Faol vertikal scrollni yoqish */
-    max-height: 787px;    /* Chat uchun maksimal balandlik */
+    overflow-x: hidden; /* Yon tomondagi scrollni yashirish */
+    overflow-y: auto; /* Faol vertikal scrollni yoqish */
+    max-height: 787px; /* Chat uchun maksimal balandlik */
     padding: 10px;
 }
 
@@ -411,6 +432,7 @@ body {
     margin-top: 5px;
     display: block;
 }
+
 .chat-input {
     position: absolute; /* Position absolute qo'shildi */
     bottom: 0; /* Inputni pastga joylashtirish */

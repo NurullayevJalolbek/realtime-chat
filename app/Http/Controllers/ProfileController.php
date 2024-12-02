@@ -13,12 +13,14 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function index(Request $request)
+    public function index(): \Illuminate\Http\JsonResponse
     {
         $users = User::all()->except(Auth::user()->id);
+        $senderUSER = User::query()->find(Auth::id());
 
         return response()->json([
             'users' => $users,
+            'senderUSER' => $senderUSER
         ]);
     }
 

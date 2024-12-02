@@ -31,7 +31,6 @@ class UserController extends Controller
             ->orderBy('created_at', 'asc') // Yozishmalarni vaqt bo'yicha tartiblash
             ->get();
 
-        // Javobni JSON formatida qaytarish
         return response()->json([
             'receiverUSER' => $receiverUSER ? $receiverUSER->toArray() : null, // null bilan tekshirish
 //            'users' => $users->toArray(),

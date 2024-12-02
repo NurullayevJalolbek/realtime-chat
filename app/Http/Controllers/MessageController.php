@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendMessage;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,37 +12,19 @@ class MessageController extends Controller
 {
     public function sendMessage(Request $request): \Illuminate\Http\JsonResponse
     {
-//        dump($request->all());
-        $message = new Message();
-        $message->sender_id = $request->input('sender_id');
-        $message->receiver_id = $request->input('receiver_id');
-        $message->text = $request->input('message');
-        $message->save();
+        $message = Message::create([
+            'sender_id' => $request->input('sender_id'),
+            'receiver_id' => $request->input('receiver_id'),
+            'text' => $request->input('message'),
+        ]);
+        dump($message);
+        SendMessage::dispatch($message);
 
-        $receiverUSER = User::find($request->input('receiver_id'));
-
-        $messages = Message::where(function ($query) use ($receiverUSER) {
-            $query->where('sender_id', Auth::id())
-                ->where('receiver_id', $receiverUSER->id);
-        })
-            ->orWhere(function ($query) use ($receiverUSER) {
-                $query->where('receiver_id', Auth::id())
-                    ->where('sender_id', $receiverUSER->id);
-            })
-            ->orderBy('created_at', 'asc')
-            ->get();
+        return response()->json([
+            'message_sent' => true,
+        ]);
 
 
-
-        if ($messages) {
-            return response()->json([
-                'message_sent' => true,
-                'messages' => $messages,
-            ]);
-        }
-
-        // Agar xatolik yuz bersa
-        return response()->json(['error' => 'Xatolik yuz berdi'], 400);
     }
 
     public function index($sender_id, $receiver_id)
@@ -66,9 +49,6 @@ class MessageController extends Controller
         ]);
 
     }
-
-
-
 
 
 }
