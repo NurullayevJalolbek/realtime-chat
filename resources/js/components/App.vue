@@ -78,7 +78,6 @@ export default {
 
         const senderUSER = ref([])
         const receiverUSER = ref([])
-        const barchaMessage = ref([])
         const MESSAGES = ref([])
         const openChat = (id) => {
             axios.get(`http://localhost:8000/contact/user_id/${id}`)
@@ -93,28 +92,23 @@ export default {
 
         }
 
-
         const BarchaMessages = () => {
             axios.get(`http://localhost:8000/messages/sender_id/${senderUSER.value.id}/receiver_id/${receiverUSER.value.id}`)
                 .then(response => {
-                    barchaMessage.value = response.data
-
+                    MESSAGES.value = response.data.map(item => ({
+                        id: item.id,
+                        sender_id: item.sender_id,
+                        receiver_id: item.receiver_id,
+                        created_at: item.created_at,
+                        text: item.text
+                    }));
+                    console.log(MESSAGES.value)
                 })
                 .catch(error => {
                     console.error('Error fetching messages:', error);
                 });
-
-
-            MESSAGES.value = barchaMessage.value[0].map(item => ({
-                id: item.id,
-                sender_id: item.sender_id,
-                receiver_id: item.receiver_id,
-                created_at: item.created_at,
-                text: item.text
-            }));
-
-
         }
+
 
 
         const scrollToBottom = () => {
@@ -144,9 +138,9 @@ export default {
                 .then(response => {
                     if (response.data) {
                         watch(MESSAGES, () => {
-                            scrollToBottom(); // Xabarlar yangilanganda pastga siljish
+                            scrollToBottom();
                         });
-                        scrollToBottom(); // Xabarlar tugagandan so'ng pastga siljitish
+                        scrollToBottom();
                         playNotificationSound();
                     }
                 })
@@ -154,7 +148,7 @@ export default {
                     console.error('Error sending message:', error);
                 });
 
-            message.value = ''; // Xabarni bo'shatish
+            message.value = '';
         }
 
         const getImageUrl = () => {
@@ -162,7 +156,7 @@ export default {
         };
 
         const formatDate = (date) => {
-            return format(new Date(date), 'HH:mm');  // Soat va daqiqa
+            return format(new Date(date), 'HH:mm');
         };
 
         //Sound Notification
@@ -173,20 +167,21 @@ export default {
             });
         };
 
+
         onMounted(() => {
             contacts();
         });
 
-
         watch([senderUSER, receiverUSER], () => {
-            console.log("SenderUSER", senderUSER.value.id, "ReceiverUSER", receiverUSER.value.id)
+            window.Echo.private(`chat.${senderUSER.value.id}.${receiverUSER.value.id}`)
+                .listen('GotMessage', (e) => {
+                    console.log('Received message:', e.message);
+                    MESSAGES.value.push(e.message);
+                });
 
-            window.Echo.private(`chat_${senderUSER.value.id}_${receiverUSER.value.id}`)
-                .listen('GotMessage', (event) => {
-                    console.log(event.messages)
-                    BarchaMessages();
-                })
         })
+
+
 
 
 

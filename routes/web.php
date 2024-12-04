@@ -3,11 +3,11 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Laravel\Reverb\Protocols\Pusher\Http\Controllers\PusherController;
 
 
-Route::post('/broadcasting/auth', function () {
-    return Auth::user();
-});
+Route::post('/pusher/user-auth', [PusherController::class, 'pusherAuth']);
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');

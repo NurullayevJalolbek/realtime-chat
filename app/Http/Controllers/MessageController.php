@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\GotMessage;
 use App\Jobs\SendMessage;
 use App\Models\Message;
 use App\Models\User;
@@ -17,8 +18,8 @@ class MessageController extends Controller
             'receiver_id' => $request->input('receiver_id'),
             'text' => $request->input('message'),
         ]);
-        dump($message);
-        SendMessage::dispatch($message);
+
+        broadcast(new GotMessage($message->toArray()));
 
         return response()->json([
             'message_sent' => true,
