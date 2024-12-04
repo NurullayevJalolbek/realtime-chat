@@ -13,14 +13,27 @@
 
         <div class="search-box cursor-auto">
             <form>
-                <input type="text" placeholder="user search......." />
-                <button type="submit" style="border: none; background: transparent; cursor: pointer; padding: 0;">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                <input
+                    type="text"
+                    placeholder="user search......."
+                    style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; outline: none; font-size: 16px;"
+                />
+                <button
+                    type="submit"
+                    style="border: none; background: transparent; cursor: pointer; padding: 0; opacity: 0; position: absolute; width: 0; height: 0;">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        style="width: 24px; height: 24px;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                     </svg>
                 </button>
             </form>
         </div>
+
 
 
 
@@ -57,7 +70,7 @@
     </div>
 
     <!-- Chat panel -->
-    <div class="chat-panel">
+    <div v-if="receiverUSER.name" class="chat-panel">
         <div v-if="receiverUSER.name" class="chat-header">
             <div>
                 <h2>{{ receiverUSER.name }}</h2>
@@ -94,6 +107,14 @@
             </form>
         </div>
     </div>
+    <div v-if="!receiverUSER.name" class="chat-panel text-center center-text">
+
+        <p> Select a user to start a chat</p>
+
+    </div>
+
+
+
 
 </template>
 <script>
@@ -215,7 +236,7 @@ export default {
         });
 
         watch([senderUSER, receiverUSER], () => {
-            window.Echo.private(`chat.${senderUSER.value.id}.${receiverUSER.value.id}`)
+            window.Echo.private(`chat.1`)
                 .listen('GotMessage', (e) => {
                     console.log('Received message:', e.message);
                     MESSAGES.value.push(e.message);
@@ -245,6 +266,16 @@ export default {
 
 </script>
 <style>
+.center-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%; /* Katta bo'shliqni to'ldirish uchun */
+    text-align: center; /* Matnni gorizontal markazlashtirish uchun */
+}
+
+
+
 /* Universal styles */
 * {
     margin: 0;
