@@ -1,7 +1,49 @@
 <template>
     <!-- Sidebar -->
     <div class="sidebar">
-        <h3>Recent Chats</h3>
+
+        <div class="profile-card">
+            <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-image">
+            <div class="profile-info">
+                <h1>wfrteg</h1>
+                <h3> toshmat@gmail.com</h3>
+            </div>
+        </div>
+
+
+        <div class="search-box cursor-auto">
+            <form>
+                <input type="text" placeholder="user search......." />
+                <button type="submit" style="border: none; background: transparent; cursor: pointer; padding: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+
+
+        <!--        <div class="button-container">-->
+<!--            &lt;!&ndash; One-to-One Chat Button &ndash;&gt;-->
+<!--            <button type="button" class="btn btn-secondary">-->
+<!--                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style="width: 1em; height: 1em; margin-right: 5px;">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />-->
+<!--                </svg>-->
+<!--                One-to-One Chat-->
+<!--            </button>-->
+
+<!--            &lt;!&ndash; Group Chat Button &ndash;&gt;-->
+<!--            <button type="button" class="btn btn-secondary">-->
+<!--                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style="width: 1em; height: 1em; margin-right: 5px;">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />-->
+<!--                </svg>-->
+<!--                Group Chat-->
+<!--            </button>-->
+<!--        </div>-->
+
+
+
         <div v-for="user in data" class="user-list">
             <div class="user" @click="openChat(user.id)">
                 <img src="https://via.placeholder.com/50" alt="Avatar" class="user-avatar">
@@ -189,6 +231,7 @@ export default {
             data: CONTACTS,
             openChat,
             senderUSER,
+            SENDERUSER,
             receiverUSER,
             inputText,
             message,
@@ -241,10 +284,9 @@ body {
 }
 
 .search-box input {
-    width: 100%;
+    width: 94%;
     padding: 10px;
     border: none;
-    border-radius: 25px;
     background: rgba(43, 43, 61, 0.9);
     color: #fff;
     outline: none;
@@ -467,4 +509,91 @@ body {
 .chat-input button:hover {
     background: rgba(0, 91, 181, 0.9);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.profile-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    margin-bottom: 15px;
+}
+
+.profile-info h1,
+.profile-info h2,
+.profile-info p {
+    margin: 10px 0;
+}
+
+.profile-info h1 {
+    font-size: 24px;
+}
+
+.profile-info h2 {
+    font-size: 20px;
+    color: #ddd;
+}
+
+.profile-info p {
+    font-size: 16px;
+    color: #bbb;
+}
+
 </style>
