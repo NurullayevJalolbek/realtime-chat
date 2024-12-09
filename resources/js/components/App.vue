@@ -2,13 +2,18 @@
     <!-- Sidebar -->
     <div class="sidebar">
 
-        <div class="profile-card">
-            <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-image">
+        <div class="full-image-container">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9ejrc7Nl8HXRSVxZf5X-lY082X6OWdftP5w&s" alt="Full Image" class="full-image">
+        </div>
+
+        <div v-if="SENDERUSER" class="profile-card">
             <div class="profile-info">
-                <h1>wfrteg</h1>
-                <h3> toshmat@gmail.com</h3>
+                <h1>{{SENDERUSER.name}}</h1>
+                <h3>{{SENDERUSER.email}}</h3>
             </div>
         </div>
+
+
 
 
         <div class="search-box cursor-auto">
@@ -33,29 +38,6 @@
                 </button>
             </form>
         </div>
-
-
-
-
-        <!--        <div class="button-container">-->
-<!--            &lt;!&ndash; One-to-One Chat Button &ndash;&gt;-->
-<!--            <button type="button" class="btn btn-secondary">-->
-<!--                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style="width: 1em; height: 1em; margin-right: 5px;">-->
-<!--                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />-->
-<!--                </svg>-->
-<!--                One-to-One Chat-->
-<!--            </button>-->
-
-<!--            &lt;!&ndash; Group Chat Button &ndash;&gt;-->
-<!--            <button type="button" class="btn btn-secondary">-->
-<!--                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" style="width: 1em; height: 1em; margin-right: 5px;">-->
-<!--                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />-->
-<!--                </svg>-->
-<!--                Group Chat-->
-<!--            </button>-->
-<!--        </div>-->
-
-
 
         <div v-for="user in data" class="user-list">
             <div class="user" @click="openChat(user.id)">
@@ -95,15 +77,21 @@
 
         <div v-if="receiverUSER.name" class="chat-input">
             <form @submit.prevent="inputText">
+
                 <input
                     v-model="message"
                     type="text"
                     placeholder="Type a message..."
                 />
+
                 <input type="hidden" :value="senderUSER.id" name="sender_id"/>
                 <input type="hidden" :value="receiverUSER.id" name="receiver_id"/>
 
                 <button type="submit" id="sendBtn">➤</button>
+
+
+
+
             </form>
         </div>
     </div>
@@ -236,16 +224,13 @@ export default {
         });
 
         watch([senderUSER, receiverUSER], () => {
-            window.Echo.private(`chat.1`)
+            const channel = `chat.0-0`;
+            window.Echo.private(channel)
                 .listen('GotMessage', (e) => {
-                    console.log('Received message:', e.message);
                     MESSAGES.value.push(e.message);
                 });
 
         })
-
-
-
 
 
         return {
@@ -266,6 +251,35 @@ export default {
 
 </script>
 <style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .center-text {
     display: flex;
     justify-content: center;
@@ -300,7 +314,7 @@ body {
 
 /* Sidebar styles */
 .sidebar {
-    width: 25%;
+    width: 23%;
     background: rgba(30, 30, 45, 0.7); /* Transparent background */
     padding: 20px;
     display: flex;
@@ -502,20 +516,18 @@ body {
 }
 
 .chat-input {
-    position: absolute; /* Position absolute qo'shildi */
     bottom: 0; /* Inputni pastga joylashtirish */
     left: 25%; /* O'ngga surish uchun chapdan 5% masofa */
     right: 0; /* O'ng tomondan cheklash */
     display: flex;
     padding: 15px;
-    background: rgba(30, 30, 45, 0.9); /* Transparent input background */
     border-top: 1px solid #333;
 }
 
 
 .chat-input input {
     flex: 1;
-    width: 670%;
+    width: 680%;
     padding: 10px;
     border: none;
     border-radius: 25px;
@@ -590,8 +602,7 @@ body {
 
 
 
-
-
+/* Mavjud CSS - Buzilmasdan saqlangan */
 .profile-card {
     text-align: center;
     padding: 20px;
@@ -626,5 +637,20 @@ body {
     font-size: 16px;
     color: #bbb;
 }
+.full-image-container {
+    width: 400px; /* Kattaroq kenglik */
+    height: 250px; /* Kattaroq balandlik */
+    margin: 20px auto; /* Markazlash */
+    overflow: hidden;
+    border: 1px solid #ddd; /* Chekka chegarasi */
+    border-radius: 10px; /* Yumaloq chekkalar */
+}
+
+.full-image {
+    width: 100%; /* Konteynerni to'liq egallash */
+    height: 100%;
+    object-fit: cover; /* Divni to'liq egallash */
+}
+
 
 </style>

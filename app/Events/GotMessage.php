@@ -18,10 +18,9 @@ class GotMessage implements ShouldBroadcast
         //
     }
 
-    public  function  broadcastOn(): PrivateChannel
+    public function broadcastOn(): PrivateChannel
     {
-        return new PrivateChannel("chat.1");
-
+        return new PrivateChannel('chat.0-0');
     }
 
     public  function broadcastWith(): array
